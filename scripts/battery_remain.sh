@@ -58,7 +58,7 @@ upower_battery_remaining_time() {
 		local remaining_time
 		remaining_time=$(upower -i "$battery" | grep -E '(remain|time to empty)')
 		if $short; then
-			echo "$remaining_time" | awk '{printf "%s %s", $(NF-1), $(NF)}'
+			echo "$remaining_time" | awk '{printf "%s%s", $(NF-1), substr($(NF), 1, 1)}'  # 12.6 hours -> 12.6h
 		else
 			echo "$remaining_time" | awk '{printf "%s %s left", $(NF-1), $(NF)}'
 		fi
