@@ -22,6 +22,7 @@ full_charge_icon_default="🌕 "
 high_charge_icon_default="🌖 "
 medium_charge_icon_default="🌗 "
 low_charge_icon_default="🌘 "
+very_low_charge_icon_default="🌑 "
 
 charged_default() {
 	if is_osx; then
@@ -40,6 +41,7 @@ get_icon_settings() {
 	high_charge_icon=$(get_tmux_option "@batt_high_charge_icon" "$high_charge_icon_default")
 	medium_charge_icon=$(get_tmux_option "@batt_medium_charge_icon" "$medium_charge_icon_default")
 	low_charge_icon=$(get_tmux_option "@batt_low_charge_icon" "$low_charge_icon_default")
+	very_low_charge_icon=$(get_tmux_option "@batt_very_low_charge_icon" "$very_low_charge_icon_default")
 }
 
 print_icon() {
@@ -51,16 +53,18 @@ print_icon() {
 	elif [[ $status =~ (^discharging) ]]; then
         # use code from the bg color
         percentage=$($CURRENT_DIR/battery_percentage.sh | sed -e 's/%//')
-        if [ $percentage -eq 100 ]; then
+        if [ $percentage -le 100 -a $percentage -ge 90 ]; then
             printf "$full_charge_icon"
-        elif [ $percentage -le 99 -a $percentage -ge 51 ];then
+        elif [ $percentage -le 89 -a $percentage -ge 65 ];then
             printf "$high_charge_icon"
-        elif [ $percentage -le 50 -a $percentage -ge 16 ];then
+        elif [ $percentage -le 64 -a $percentage -ge 40 ];then
             printf "$medium_charge_icon"
-        elif [ "$percentage" == "" ];then  
+        elif [ $percentage -le 39 -a $percentage -ge 20 ];then
+            printf "$low_charge_icon"
+        elif [ "$percentage" == "" ];then
             printf "$full_charge_icon_default"  # assume it's a desktop
         else
-            printf "$low_charge_icon"
+            printf "$very_low_charge_icon"
         fi
 	elif [[ $status =~ (attached) ]]; then
 		printf "$attached_icon"
