@@ -2,7 +2,7 @@
 
 # Dont' start if there's no battery
 ls /sys/class/power_supply/BAT* &> /dev/null || {
-	exit
+	exit 0
 }
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
