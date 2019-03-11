@@ -80,16 +80,20 @@ upower_battery_remaining_time() {
 }
 
 acpi_battery_remaining_time() {
-	acpi -b | grep -m 1 -Eo "[0-9]+:[0-9]+:[0-9]+"
+	if $short; then
+		acpi -b | grep -m 1 -Eo "[0-9]+:[0-9]+"
+	else
+		acpi -b | grep -m 1 -Eo "[0-9]+:[0-9]+:[0-9]+"
+	fi
 }
 
 print_battery_remain() {
-	if command_exists "pmset"; then
-		pmset_battery_remaining_time
+	if command_exists "acpi"; then
+		acpi_battery_remaining_time
 	elif command_exists "upower"; then
 		upower_battery_remaining_time
-	elif command_exists "acpi"; then
-		acpi_battery_remaining_time
+	elif command_exists "pmset"; then
+		pmset_battery_remaining_time
 	fi
 }
 

@@ -28,15 +28,18 @@ command_exists() {
 }
 
 battery_status() {
-	if command_exists "pmset"; then
-		pmset -g batt | awk -F '; *' 'NR==2 { print $2 }'
-	elif command_exists "upower"; then
-		local battery
-		battery=$(upower -e | grep -E 'battery|DisplayDevice'| tail -n1)
-		upower -i $battery | awk '/state/ {print $2}'
-	elif command_exists "acpi"; then
-		acpi -b | awk '{gsub(/,/, ""); print tolower($3); exit}'
-	elif command_exists "termux-battery-status"; then
-		termux-battery-status | jq -r '.status' | awk '{printf("%s%", tolower($1))}'
-	fi
+	# Using this directly because we've ensured the dir exists in battery.tmux
+	local status=$(cat /sys/class/power_supply/BAT*/status)
+	echo "${status,}"  # Converts the first letter to lower case in bash
+	# if command_exists "pmset"; then
+		# pmset -g batt | awk -F '; *' 'NR==2 { print $2 }'
+	# elif command_exists "acpi"; then
+		# acpi -b | awk '{gsub(/,/, ""); print tolower($3); exit}'
+	# elif command_exists "upower"; then
+		# local battery
+		# battery=$(upower -e | grep -E 'battery|DisplayDevice'| tail -n1)
+		# upower -i $battery | awk '/state/ {print $2}'
+	# elif command_exists "termux-battery-status"; then
+		# termux-battery-status | jq -r '.status' | awk '{printf("%s%", tolower($1))}'
+	# fi
 }
