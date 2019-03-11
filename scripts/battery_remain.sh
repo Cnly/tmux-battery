@@ -4,6 +4,9 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$CURRENT_DIR/helpers.sh"
 
+update_interval=$(get_tmux_option @batt_remaining_update_interval 0)
+last_update_filename="/tmp/tmux-battery-remaining-last-update"
+
 short=false
 
 get_remain_settings() {
@@ -88,13 +91,29 @@ acpi_battery_remaining_time() {
 }
 
 print_battery_remain() {
-	if command_exists "acpi"; then
-		acpi_battery_remaining_time
-	elif command_exists "upower"; then
-		upower_battery_remaining_time
-	elif command_exists "pmset"; then
-		pmset_battery_remaining_time
+	local do_actual_update=false
+	if [ "${update_interval}" -gt 0 ]; then
+		if [ ! -f "${last_update_filename}" ]; then
+			do_actual_update=true
+		else
+			local seconds_elapsed=$(($(date +%s) - $(date +%s -r "${last_update_filename}")))
+			[ "${seconds_elapsed}" -gt "${update_interval}" ] && do_actual_update=true
+		fi
 	fi
+
+	if [ "${do_actual_update}" = true ]; then
+		local output=""
+		if command_exists "acpi"; then
+			output=$(acpi_battery_remaining_time)
+		elif command_exists "upower"; then
+			output=$(upower_battery_remaining_time)
+		elif command_exists "pmset"; then
+			output=$(pmset_battery_remaining_time)
+		fi
+		echo "${output}" > "${last_update_filename}"
+	fi
+
+	cat "${last_update_filename}"
 }
 
 main() {
